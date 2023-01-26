@@ -6,8 +6,8 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/inkyblackness/imgui-go"
-	. "micahke/go-graphics-engine/core"
 	"github.com/micahke/glfw_imgui_backend"
+	. "micahke/go-graphics-engine/core"
 	"runtime"
 )
 
@@ -42,7 +42,9 @@ func main() {
 	context := imgui.CreateContext(nil)
 	defer context.Destroy()
 
-	impl := glfw_imgui_backend.ImguiGlfw3Init(window)
+  io := imgui.CurrentIO()
+
+	impl := glfw_imgui_backend.ImguiGlfw3Init(window, io)
 	defer impl.Shutdown()
 
 	showDemoWindow := false
