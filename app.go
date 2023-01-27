@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"github.com/AllenDang/imgui-go"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/inkyblackness/imgui-go"
 	"github.com/micahke/glfw_imgui_backend"
 	. "micahke/go-graphics-engine/core"
 	"runtime"
@@ -41,15 +40,10 @@ func main() {
 
 	context := imgui.CreateContext(nil)
 	defer context.Destroy()
-
-  io := imgui.CurrentIO()
+	io := imgui.CurrentIO()
 
 	impl := glfw_imgui_backend.ImguiGlfw3Init(window, io)
 	defer impl.Shutdown()
-
-	showDemoWindow := false
-	showAnotherWindow := false
-	counter := 0
 
 	positions := []float32{
 		100.0, 100.0, 0.0, 0.0,
@@ -80,19 +74,13 @@ func main() {
 	proj := mgl32.Ortho(0, 960, 0, 540, -1.0, 1.0)
 	// View Projection (camera)
 	view := mgl32.Translate3D(-100, 0, 0)
-	// Model Tranformation (coverting into NDC)
-	model := mgl32.Translate3D(200, 200, 0)
-
-	mvp := proj.Mul4(view).Mul4(model)
 
 	// vp := mgl32.Vec4{100.0, 100.0, 0.0, 1.0}
 	// result := proj.Mul4x1(vp) // Simulating what the shader is doing
-	fmt.Println(mvp)
 
 	shader := NewShader("vertexShader.glsl", "fragmentShader.glsl")
 	shader.Bind()
 	shader.SetUniform4f("u_Color", 0.8, 0.3, 0.8, 1.9)
-	shader.SetUniformMat4f("u_MVP", mvp)
 
 	texture := NewTexture("fragment.png")
 	texture.Bind(0)
@@ -106,46 +94,25 @@ func main() {
 	var r float32 = 0.0
 	var increment float32 = 0.05
 
+	translationPositions := [3]float32{200, 200, 0}
+
 	for !window.ShouldClose() {
 
 		impl.NewFrame()
 
-		// 1. Show a simple window.
-		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
-		{
-			imgui.Text("Hello, world!")
+		// Model Tranformation (coverting into NDC)
+		model := mgl32.Translate3D(translationPositions[0], translationPositions[1], translationPositions[2])
 
-			imgui.Checkbox("Demo Window", &showDemoWindow)
-			imgui.Checkbox("Another Window", &showAnotherWindow)
+		mvp := proj.Mul4(view).Mul4(model)
 
-			if imgui.Button("Button") {
-				counter++
-			}
-			imgui.SameLine()
-			imgui.Text(fmt.Sprintf("counter = %d", counter))
-
-		}
-
-		// 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name your windows.
-		if showAnotherWindow {
-			imgui.BeginV("Another Window", &showAnotherWindow, 0)
-			imgui.Text("Hello from another window!")
-			if imgui.Button("Close Me") {
-				showAnotherWindow = false
-			}
-			imgui.End()
-		}
-
-		// 3. Show the ImGui demo window. Most of the sample code is in imgui.ShowDemoWindow().
-		// Read its code to learn more about Dear ImGui!
-		if showDemoWindow {
-			imgui.ShowDemoWindow(&showDemoWindow)
-		}
+		// imgui.SliderFloat3("Translation", , 0.0, 960.0)
+    imgui.SliderFloat3("Translation 3D", &translationPositions, 0, 960)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		shader.Bind()
 		shader.SetUniform4f("u_Color", r, 0.3, 0.8, 1.0)
+		shader.SetUniformMat4f("u_MVP", mvp)
 
 		va.Bind()
 		ib.Bind()
@@ -168,4 +135,7 @@ func main() {
 		glfw.PollEvents()
 	}
 
+	// TODO: add shutdown function to the package
+	context.Destroy()
+	glfw.Terminate()
 }
