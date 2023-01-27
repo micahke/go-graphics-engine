@@ -96,6 +96,8 @@ func main() {
 
 	translationPositions := [3]float32{200, 200, 0}
 
+  renderer := NewRenderer()
+
 	for !window.ShouldClose() {
 
 		impl.NewFrame()
@@ -110,14 +112,11 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		shader.Bind()
+		// shader.Bind()
 		shader.SetUniform4f("u_Color", r, 0.3, 0.8, 1.0)
 		shader.SetUniformMat4f("u_MVP", mvp)
 
-		va.Bind()
-		ib.Bind()
-
-		gl.DrawElements(gl.TRIANGLES, int32(ib.GetCount()), gl.UNSIGNED_INT, nil)
+    renderer.Draw(va, ib, shader)
 
 		if r > 1.0 {
 			increment = -0.5

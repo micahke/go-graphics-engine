@@ -7,12 +7,12 @@ type IndexBuffer struct {
 	m_Count      int
 }
 
-func NewIndexBuffer(data []uint32) *IndexBuffer {
+func NewIndexBuffer(data []uint32) IndexBuffer {
 	var ib uint32
 	gl.GenBuffers(1, &ib)
 	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, 4*len(data), gl.Ptr(data), gl.STATIC_DRAW)
-	return &IndexBuffer{m_RendererID: ib, m_Count: len(data)}
+	return IndexBuffer{m_RendererID: ib, m_Count: len(data)}
 }
 
 func (ib *IndexBuffer) Bind() {

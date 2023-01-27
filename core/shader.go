@@ -14,7 +14,7 @@ type Shader struct {
 	m_UniformLocationCache map[string]int32
 }
 
-func NewShader(vertexPath string, fragmentPath string) *Shader {
+func NewShader(vertexPath string, fragmentPath string) Shader {
 	shader := Shader{}
 	vertexShader := shader.ParseShader(vertexPath)
 	fragmentShader := shader.ParseShader(fragmentPath)
@@ -25,7 +25,7 @@ func NewShader(vertexPath string, fragmentPath string) *Shader {
 	shader.m_FragmentPath = fragmentPath
 	shader.m_UniformLocationCache = make(map[string]int32)
 
-	return &shader
+	return shader
 
 }
 

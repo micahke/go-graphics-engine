@@ -9,8 +9,8 @@ type VertexBufferLayout struct {
     m_Stride   int
 }
 
-func NewVertexBufferLayout() *VertexBufferLayout {
-  return &VertexBufferLayout{}
+func NewVertexBufferLayout() VertexBufferLayout {
+  return VertexBufferLayout{}
 }
 
 func (vbl *VertexBufferLayout) Pushf(count int) {
