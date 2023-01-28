@@ -96,7 +96,7 @@ func main() {
 
 	translationPositions := [3]float32{200, 200, 0}
 
-  renderer := NewRenderer()
+	renderer := NewRenderer()
 
 	for !window.ShouldClose() {
 
@@ -108,7 +108,7 @@ func main() {
 		mvp := proj.Mul4(view).Mul4(model)
 
 		// imgui.SliderFloat3("Translation", , 0.0, 960.0)
-    imgui.SliderFloat3("Translation 3D", &translationPositions, 0, 960)
+		imgui.SliderFloat3("Translation 3D", &translationPositions, 0, 960)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
@@ -116,7 +116,7 @@ func main() {
 		shader.SetUniform4f("u_Color", r, 0.3, 0.8, 1.0)
 		shader.SetUniformMat4f("u_MVP", mvp)
 
-    renderer.Draw(va, ib, shader)
+		renderer.Draw(va, ib, shader)
 
 		if r > 1.0 {
 			increment = -0.5
@@ -135,6 +135,7 @@ func main() {
 	}
 
 	// TODO: add shutdown function to the package
+	impl.Shutdown()
 	context.Destroy()
 	glfw.Terminate()
 }
