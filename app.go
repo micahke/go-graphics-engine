@@ -1,11 +1,9 @@
 package main
 
 import (
-	"github.com/AllenDang/imgui-go"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/micahke/glfw_imgui_backend"
 	. "micahke/go-graphics-engine/core"
 	"runtime"
 )
@@ -38,23 +36,17 @@ func main() {
 		panic("Error initializing OpenGL")
 	}
 
-	context := imgui.CreateContext(nil)
-	defer context.Destroy()
-	io := imgui.CurrentIO()
-
-	impl := glfw_imgui_backend.ImguiGlfw3Init(window, io)
-	defer impl.Shutdown()
-
 	positions := []float32{
-		100.0, 100.0, 0.0, 0.0,
-		200.0, 100.0, 1.0, 0.0,
-		200.0, 200.0, 1.0, 1.0,
-		100.0, 200.0, 0.0, 1.0,
+		// positions           // texture coords
+		0.5, 0.5, 0.0, 1.0, 1.0, // top right
+		0.5, -0.5, 0.0, 1.0, 0.0, // bottom right
+		-0.5, -0.5, 0.0, 0.0, 0.0, // bottom left
+		-0.5, 0.5, 0.0, 0.0, 1.0, // top left
 	}
 
 	indeces := []uint32{
-		0, 1, 2,
-		2, 3, 0,
+		0, 1, 3, // first triangle
+		1, 2, 3, // second triangle
 	}
 
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -64,19 +56,11 @@ func main() {
 	vb := NewVertexBuffer(positions)
 
 	layout := NewVertexBufferLayout()
-	layout.Pushf(2)
-	layout.Pushf(2)
+	layout.Pushf(3) // represents the postions
+	layout.Pushf(2) // represents the texture coords
 	va.AddBuffer(vb, layout)
 
 	ib := NewIndexBuffer(indeces)
-
-	// Ortho Projection
-	proj := mgl32.Ortho(0, 960, 0, 540, -1.0, 1.0)
-	// View Projection (camera)
-	view := mgl32.Translate3D(-100, 0, 0)
-
-	// vp := mgl32.Vec4{100.0, 100.0, 0.0, 1.0}
-	// result := proj.Mul4x1(vp) // Simulating what the shader is doing
 
 	shader := NewShader("vertexShader.glsl", "fragmentShader.glsl")
 	shader.Bind()
@@ -91,53 +75,29 @@ func main() {
 	ib.Unbind()
 	shader.Unbind()
 
-	var r float32 = 0.0
-	var increment float32 = 0.05
-
-	translationPositions := [3]float32{200, 200, 0}
-
 	renderer := NewRenderer()
 
 	// RENDER LOOP
 	for !window.ShouldClose() {
 
-		impl.NewFrame()
-
-		// Model Tranformation (coverting into NDC)
-		model := mgl32.Translate3D(translationPositions[0], translationPositions[1], translationPositions[2])
-
-		mvp := proj.Mul4(view).Mul4(model)
-
-		// imgui.SliderFloat3("Translation", , 0.0, 960.0)
-
-		imgui.SliderFloat3("Translation 3D", &translationPositions, 0, 960)
-
+		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		// shader.Bind()
-		shader.SetUniform4f("u_Color", r, 0.3, 0.8, 1.0)
-		shader.SetUniformMat4f("u_MVP", mvp)
+		// transformations
+		transform := mgl32.Ident4()
+		transform = transform.Mul4(mgl32.Translate3D(0.5, -0.5, 0))
+		transform = transform.Mul4(mgl32.HomogRotate3DZ(float32(glfw.GetTime())))
+
+		shader.SetUniform4f("u_Color", 0.2, 0.3, 0.8, 1.0)
+		shader.SetUniformMat4f("u_MVP", transform)
 
 		renderer.Draw(va, ib, shader)
 
-		if r > 1.0 {
-			increment = -0.5
-		} else if r < 0.0 {
-			increment = 0.05
-		}
-
-		r = r + increment
-
-		imgui.Render()
-		impl.Render(imgui.RenderedDrawData())
-
+		// glfw: swap buffers and poll IO events
 		window.SwapBuffers()
-
 		glfw.PollEvents()
 	}
 
 	// TODO: add shutdown function to the package
-	impl.Shutdown()
-	context.Destroy()
 	glfw.Terminate()
 }
