@@ -89,6 +89,7 @@ func (shader *Shader) CreateShader(vertexShader string, fragmentShader string) {
 	shader.m_Renderer_ID = program
 }
 
+
 func (shader *Shader) SetUniform1i(name string, value int32) {
 	// location := gl.GetUniformLocation(shader.m_Renderer_ID, gl.Str(name+"\x00"))
 	gl.Uniform1i(shader.GetUniformLocation(name), value)

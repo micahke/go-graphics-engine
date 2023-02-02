@@ -98,6 +98,7 @@ func main() {
 
 	renderer := NewRenderer()
 
+	// RENDER LOOP
 	for !window.ShouldClose() {
 
 		impl.NewFrame()
@@ -108,6 +109,7 @@ func main() {
 		mvp := proj.Mul4(view).Mul4(model)
 
 		// imgui.SliderFloat3("Translation", , 0.0, 960.0)
+
 		imgui.SliderFloat3("Translation 3D", &translationPositions, 0, 960)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT)
