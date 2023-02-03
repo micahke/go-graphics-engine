@@ -13,5 +13,6 @@ func (renderer *Renderer) Draw(va VertexArray, ib IndexBuffer, shader Shader) {
 	shader.Bind()
 	va.Bind()
 	ib.Bind()
-	gl.DrawElements(gl.TRIANGLES, int32(ib.GetCount()), gl.UNSIGNED_INT, nil)
+  gl.DrawArrays(gl.TRIANGLES, 0, 36)
+	// gl.DrawElements(gl.TRIANGLES, int32(ib.GetCount()), gl.UNSIGNED_INT, nil)
 }

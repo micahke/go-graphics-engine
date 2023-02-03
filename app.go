@@ -36,13 +36,15 @@ func main() {
 		panic("Error initializing OpenGL")
 	}
 
-	positions := []float32{
-		// positions           // texture coords
-		0.5, 0.5, 0.0, 1.0, 1.0, // top right
-		0.5, -0.5, 0.0, 1.0, 0.0, // bottom right
-		-0.5, -0.5, 0.0, 0.0, 0.0, // bottom left
-		-0.5, 0.5, 0.0, 0.0, 1.0, // top left
-	}
+	// positions := []float32{
+	// 	// positions           // texture coords
+	// 	0.5, 0.5, 0.0, 1.0, 1.0, // top right
+	// 	0.5, -0.5, 0.0, 1.0, 0.0, // bottom right
+	// 	-0.5, -0.5, 0.0, 0.0, 0.0, // bottom left
+	// 	-0.5, 0.5, 0.0, 0.0, 1.0, // top left
+	// }
+
+  positions := GetCubePositions()
 
 	indeces := []uint32{
 		0, 1, 3, // first triangle
@@ -51,9 +53,10 @@ func main() {
 
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.Enable(gl.BLEND)
+  gl.Enable(gl.DEPTH_TEST)
 
 	va := NewVertexArray()
-	vb := NewVertexBuffer(positions)
+	vb := NewVertexBuffer(*positions)
 
 	layout := NewVertexBufferLayout()
 	layout.Pushf(3) // represents the postions
@@ -81,15 +84,10 @@ func main() {
 	for !window.ShouldClose() {
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-
-		// transformations
-		// transform := mgl32.Ident4()
-		// transform = transform.Mul4(mgl32.Translate3D(0.5, -0.5, 0))
-		// transform = transform.Mul4(mgl32.HomogRotate3DZ(float32(glfw.GetTime())))
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     model := mgl32.Ident4()
-    modelRotation := mgl32.HomogRotate3D(mgl32.DegToRad(-55.0), mgl32.Vec3{1.0, 0.0, 0.0})
+    modelRotation := mgl32.HomogRotate3D(mgl32.DegToRad(50.0) * float32(glfw.GetTime()), mgl32.Vec3{1.0, 0.0, 0.0})
     model = model.Mul4(modelRotation)
 
     view := mgl32.Ident4()
@@ -102,7 +100,7 @@ func main() {
     shader.SetUniformMat4f("model", model)
     shader.SetUniformMat4f("view", view)
     shader.SetUniformMat4f("projection", projection)
-
+    
 		renderer.Draw(va, ib, shader)
 
 		// glfw: swap buffers and poll IO events
