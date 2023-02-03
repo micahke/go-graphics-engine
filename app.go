@@ -2,6 +2,7 @@ package main
 
 import (
 	// "math"
+	"math"
 	. "micahke/go-graphics-engine/core"
 	"runtime"
 
@@ -20,6 +21,12 @@ var cameraUp mgl32.Vec3 = mgl32.Vec3{0.0, 1.0, 0.0}
 
 var deltaTime float32 = 0.0
 var lastFrame float32 = 0.0
+
+var yaw float32 = -90.0
+var pitch float32 = -90.0
+var lastX float32 = 480
+var lastY float32 = 270
+var firstMouse bool = true
 
 func main() {
 
@@ -87,6 +94,11 @@ func main() {
 	projection := mgl32.Perspective(mgl32.DegToRad(45.0), 960.0/540.0, 0.1, 100.0)
 	shader.SetUniformMat4f("projection", projection)
 
+  // set up glfw camera
+  window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+  window.SetCursorPosCallback(mouse_callback)
+
+
 	// RENDER LOOP
 	for !window.ShouldClose() {
 
@@ -100,9 +112,7 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		view := mgl32.Ident4()
-		// var radius float32 = 5.0
-		// camX := float32(math.Sin(glfw.GetTime())) * radius
-		// camZ := float32(math.Cos(glfw.GetTime())) * radius
+		// var radius float32 = 5.0 camX := float32(math.Sin(glfw.GetTime())) * radius camZ := float32(math.Cos(glfw.GetTime())) * radius
 		cameraLookAt := mgl32.LookAtV(cameraPos, cameraPos.Add(cameraFront), cameraUp)
 		view = view.Mul4(cameraLookAt)
 		shader.SetUniformMat4f("view", view)
@@ -121,12 +131,11 @@ func main() {
 			renderer.Draw(va, ib, shader)
 		}
 
-		// glfw: swap buffers and poll IO events
+		// glfw: swap buffers
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
 
-	// TODO: add shutdown function to the package
 	glfw.Terminate()
 }
 
@@ -157,3 +166,40 @@ func processInput(window *glfw.Window) {
 	}
 
 }
+
+
+func mouse_callback(window *glfw.Window, xpos float64, ypos float64) {
+
+  if firstMouse {
+    lastX = float32(xpos)
+    lastY = float32(ypos)
+    firstMouse = false
+  }
+
+  // calculate offset from last mouse position
+  var xOffset float32 = float32(xpos) - lastX
+  var yOffset float32 = lastY - float32(ypos) // this needs to be reversed
+  lastX = float32(xpos)
+  lastY = float32(ypos)
+
+  var sensitivity float32 = 0.1
+  xOffset *= sensitivity
+  yOffset *= sensitivity
+
+  yaw += xOffset
+  pitch += yOffset
+
+  if pitch > 89.0 {
+    pitch = 89.0
+  }
+  if pitch < -89.0 {
+    pitch = -89.0
+  }
+
+  var direction mgl32.Vec3
+  direction[0] = float32(math.Cos(float64(mgl32.DegToRad(yaw))) * math.Cos(float64(mgl32.DegToRad(pitch))))
+  direction[1] = float32(math.Sin(float64(mgl32.DegToRad(pitch))))
+  direction[2] = float32(math.Sin(float64(mgl32.DegToRad(yaw))) * math.Cos(float64(mgl32.DegToRad(pitch))))
+  cameraFront = direction.Normalize()
+}
+
