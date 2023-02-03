@@ -75,11 +75,6 @@ func main() {
 	texture.Bind(0)
 	shader.SetUniform1i("u_Texture", 0)
 
-	va.Unbind()
-	vb.Unbind()
-	ib.Unbind()
-	shader.Unbind()
-
 	renderer := NewRenderer()
 
 	projection := mgl32.Perspective(mgl32.DegToRad(45.0), 960.0/540.0, 0.1, 100.0)
@@ -91,22 +86,17 @@ func main() {
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		var view mgl32.Mat4
-		// view = mgl32.LookAtV(
-		//   mgl32.Vec3{0.0, 0.0, 3.0},
-		//   mgl32.Vec3{0.0, 0.0, 0.0},
-		//   mgl32.Vec3{0.0, 1.0, 0.0},
-		// )
-
+		view := mgl32.Ident4()
 		var radius float32 = 10.0
-		camX := math.Sin(glfw.GetTime() * float64(radius))
-		camZ := math.Cos(glfw.GetTime() * float64(radius))
-		view = mgl32.LookAtV(
-			mgl32.Vec3{float32(camX), 0.0, float32(camZ)},
+		camX := float32(math.Sin(glfw.GetTime())) * radius
+		camZ := float32(math.Cos(glfw.GetTime())) * radius
+		cameraLookAt := mgl32.LookAtV(
+			mgl32.Vec3{camX, 0.0, camZ},
 			mgl32.Vec3{0.0, 0.0, 0.0},
 			mgl32.Vec3{0.0, 1.0, 0.0},
 		)
-			shader.SetUniformMat4f("view", view)
+		view = view.Mul4(cameraLookAt)
+		shader.SetUniformMat4f("view", view)
 
 		for i := 0; i < 10; i++ {
 			model := mgl32.Ident4()
