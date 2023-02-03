@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "math"
 	"math"
 	. "micahke/go-graphics-engine/core"
 	"runtime"
@@ -27,6 +26,8 @@ var pitch float32 = -90.0
 var lastX float32 = 480
 var lastY float32 = 270
 var firstMouse bool = true
+
+var fov float32 = 45.0
 
 func main() {
 
@@ -91,25 +92,25 @@ func main() {
 
 	renderer := NewRenderer()
 
-	projection := mgl32.Perspective(mgl32.DegToRad(45.0), 960.0/540.0, 0.1, 100.0)
-	shader.SetUniformMat4f("projection", projection)
-
-  // set up glfw camera
-  window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
-  window.SetCursorPosCallback(mouse_callback)
-
+	// set up glfw camera
+	window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+	window.SetCursorPosCallback(mouse_callback)
+	window.SetScrollCallback(scroll_callback)
 
 	// RENDER LOOP
 	for !window.ShouldClose() {
 
-    var currentFrame float32 = float32(glfw.GetTime()) 
-    deltaTime = currentFrame - lastFrame
-    lastFrame = currentFrame
-  
-    processInput(window)
+		var currentFrame float32 = float32(glfw.GetTime())
+		deltaTime = currentFrame - lastFrame
+		lastFrame = currentFrame
+
+		processInput(window)
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+		projection := mgl32.Perspective(mgl32.DegToRad(fov), 960.0/540.0, 0.1, 100.0)
+		shader.SetUniformMat4f("projection", projection)
 
 		view := mgl32.Ident4()
 		// var radius float32 = 5.0 camX := float32(math.Sin(glfw.GetTime())) * radius camZ := float32(math.Cos(glfw.GetTime())) * radius
@@ -141,7 +142,7 @@ func main() {
 
 // processes the GLFW window input every frame
 func processInput(window *glfw.Window) {
-  // control the camera
+	// control the camera
 	var cameraSpeed float32 = 2.5 * deltaTime
 
 	if window.GetKey(glfw.KeyW) == glfw.Press {
@@ -153,53 +154,61 @@ func processInput(window *glfw.Window) {
 		cameraPos = cameraPos.Sub(translation)
 	}
 	if window.GetKey(glfw.KeyA) == glfw.Press {
-    crossProduct := cameraFront.Cross(cameraUp)
-    crossProduct = crossProduct.Normalize()
-    translation := crossProduct.Mul(cameraSpeed)
-    cameraPos = cameraPos.Sub(translation)
+		crossProduct := cameraFront.Cross(cameraUp)
+		crossProduct = crossProduct.Normalize()
+		translation := crossProduct.Mul(cameraSpeed)
+		cameraPos = cameraPos.Sub(translation)
 	}
 	if window.GetKey(glfw.KeyD) == glfw.Press {
-    crossProduct := cameraFront.Cross(cameraUp)
-    crossProduct = crossProduct.Normalize()
-    translation := crossProduct.Mul(cameraSpeed)
-    cameraPos = cameraPos.Add(translation)
+		crossProduct := cameraFront.Cross(cameraUp)
+		crossProduct = crossProduct.Normalize()
+		translation := crossProduct.Mul(cameraSpeed)
+		cameraPos = cameraPos.Add(translation)
 	}
 
 }
-
 
 func mouse_callback(window *glfw.Window, xpos float64, ypos float64) {
 
-  if firstMouse {
-    lastX = float32(xpos)
-    lastY = float32(ypos)
-    firstMouse = false
-  }
+	if firstMouse {
+		lastX = float32(xpos)
+		lastY = float32(ypos)
+		firstMouse = false
+	}
 
-  // calculate offset from last mouse position
-  var xOffset float32 = float32(xpos) - lastX
-  var yOffset float32 = lastY - float32(ypos) // this needs to be reversed
-  lastX = float32(xpos)
-  lastY = float32(ypos)
+	// calculate offset from last mouse position
+	var xOffset float32 = float32(xpos) - lastX
+	var yOffset float32 = lastY - float32(ypos) // this needs to be reversed
+	lastX = float32(xpos)
+	lastY = float32(ypos)
 
-  var sensitivity float32 = 0.1
-  xOffset *= sensitivity
-  yOffset *= sensitivity
+	var sensitivity float32 = 0.1
+	xOffset *= sensitivity
+	yOffset *= sensitivity
 
-  yaw += xOffset
-  pitch += yOffset
+	yaw += xOffset
+	pitch += yOffset
 
-  if pitch > 89.0 {
-    pitch = 89.0
-  }
-  if pitch < -89.0 {
-    pitch = -89.0
-  }
+	if pitch > 89.0 {
+		pitch = 89.0
+	}
+	if pitch < -89.0 {
+		pitch = -89.0
+	}
 
-  var direction mgl32.Vec3
-  direction[0] = float32(math.Cos(float64(mgl32.DegToRad(yaw))) * math.Cos(float64(mgl32.DegToRad(pitch))))
-  direction[1] = float32(math.Sin(float64(mgl32.DegToRad(pitch))))
-  direction[2] = float32(math.Sin(float64(mgl32.DegToRad(yaw))) * math.Cos(float64(mgl32.DegToRad(pitch))))
-  cameraFront = direction.Normalize()
+	var direction mgl32.Vec3
+	direction[0] = float32(math.Cos(float64(mgl32.DegToRad(yaw))) * math.Cos(float64(mgl32.DegToRad(pitch))))
+	direction[1] = float32(math.Sin(float64(mgl32.DegToRad(pitch))))
+	direction[2] = float32(math.Sin(float64(mgl32.DegToRad(yaw))) * math.Cos(float64(mgl32.DegToRad(pitch))))
+	cameraFront = direction.Normalize()
 }
 
+func scroll_callback(window *glfw.Window, xoffset float64, yoffset float64) {
+	fov -= float32(yoffset)
+	if fov < 1.0 {
+		fov = 1.0
+	}
+	if fov > 45.0 {
+		fov = 45.0
+	}
+}
