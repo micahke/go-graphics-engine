@@ -84,12 +84,24 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		// transformations
-		transform := mgl32.Ident4()
-		transform = transform.Mul4(mgl32.Translate3D(0.5, -0.5, 0))
-		transform = transform.Mul4(mgl32.HomogRotate3DZ(float32(glfw.GetTime())))
+		// transform := mgl32.Ident4()
+		// transform = transform.Mul4(mgl32.Translate3D(0.5, -0.5, 0))
+		// transform = transform.Mul4(mgl32.HomogRotate3DZ(float32(glfw.GetTime())))
+
+    model := mgl32.Ident4()
+    modelRotation := mgl32.HomogRotate3D(mgl32.DegToRad(-55.0), mgl32.Vec3{1.0, 0.0, 0.0})
+    model = model.Mul4(modelRotation)
+
+    view := mgl32.Ident4()
+    viewTranslation := mgl32.Translate3D(0.0, 0.0, -3.0)
+    view = view.Mul4(viewTranslation)
+
+    projection := mgl32.Perspective(mgl32.DegToRad(45.0), 960.0 / 540.0, 0.1, 100.0)
 
 		shader.SetUniform4f("u_Color", 0.2, 0.3, 0.8, 1.0)
-		shader.SetUniformMat4f("u_MVP", transform)
+    shader.SetUniformMat4f("model", model)
+    shader.SetUniformMat4f("view", view)
+    shader.SetUniformMat4f("projection", projection)
 
 		renderer.Draw(va, ib, shader)
 
