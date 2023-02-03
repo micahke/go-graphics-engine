@@ -18,6 +18,9 @@ var cameraPos mgl32.Vec3 = mgl32.Vec3{0.0, 0.0, 3.0}
 var cameraFront mgl32.Vec3 = mgl32.Vec3{0.0, 0.0, -1.0}
 var cameraUp mgl32.Vec3 = mgl32.Vec3{0.0, 1.0, 0.0}
 
+var deltaTime float32 = 0.0
+var lastFrame float32 = 0.0
+
 func main() {
 
 	if err := glfw.Init(); err != nil {
@@ -87,6 +90,10 @@ func main() {
 	// RENDER LOOP
 	for !window.ShouldClose() {
 
+    var currentFrame float32 = float32(glfw.GetTime()) 
+    deltaTime = currentFrame - lastFrame
+    lastFrame = currentFrame
+  
     processInput(window)
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
@@ -126,7 +133,7 @@ func main() {
 // processes the GLFW window input every frame
 func processInput(window *glfw.Window) {
   // control the camera
-	var cameraSpeed float32 = 0.05
+	var cameraSpeed float32 = 2.5 * deltaTime
 
 	if window.GetKey(glfw.KeyW) == glfw.Press {
 		translation := cameraFront.Mul(cameraSpeed)
