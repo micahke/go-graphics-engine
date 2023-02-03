@@ -1,7 +1,7 @@
 package main
 
 import (
-	"math"
+	// "math"
 	. "micahke/go-graphics-engine/core"
 	"runtime"
 
@@ -13,6 +13,10 @@ import (
 func init() {
 	runtime.LockOSThread()
 }
+
+var cameraPos mgl32.Vec3 = mgl32.Vec3{0.0, 0.0, 3.0}
+var cameraFront mgl32.Vec3 = mgl32.Vec3{0.0, 0.0, -1.0}
+var cameraUp mgl32.Vec3 = mgl32.Vec3{0.0, 1.0, 0.0}
 
 func main() {
 
@@ -83,18 +87,16 @@ func main() {
 	// RENDER LOOP
 	for !window.ShouldClose() {
 
+    processInput(window)
+
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		view := mgl32.Ident4()
-		var radius float32 = 10.0
-		camX := float32(math.Sin(glfw.GetTime())) * radius
-		camZ := float32(math.Cos(glfw.GetTime())) * radius
-		cameraLookAt := mgl32.LookAtV(
-			mgl32.Vec3{camX, 0.0, camZ},
-			mgl32.Vec3{0.0, 0.0, 0.0},
-			mgl32.Vec3{0.0, 1.0, 0.0},
-		)
+		// var radius float32 = 5.0
+		// camX := float32(math.Sin(glfw.GetTime())) * radius
+		// camZ := float32(math.Cos(glfw.GetTime())) * radius
+		cameraLookAt := mgl32.LookAtV(cameraPos, cameraPos.Add(cameraFront), cameraUp)
 		view = view.Mul4(cameraLookAt)
 		shader.SetUniformMat4f("view", view)
 
@@ -119,4 +121,32 @@ func main() {
 
 	// TODO: add shutdown function to the package
 	glfw.Terminate()
+}
+
+// processes the GLFW window input every frame
+func processInput(window *glfw.Window) {
+  // control the camera
+	var cameraSpeed float32 = 0.05
+
+	if window.GetKey(glfw.KeyW) == glfw.Press {
+		translation := cameraFront.Mul(cameraSpeed)
+		cameraPos = cameraPos.Add(translation)
+	}
+	if window.GetKey(glfw.KeyS) == glfw.Press {
+		translation := cameraFront.Mul(cameraSpeed)
+		cameraPos = cameraPos.Sub(translation)
+	}
+	if window.GetKey(glfw.KeyA) == glfw.Press {
+    crossProduct := cameraFront.Cross(cameraUp)
+    crossProduct = crossProduct.Normalize()
+    translation := crossProduct.Mul(cameraSpeed)
+    cameraPos = cameraPos.Sub(translation)
+	}
+	if window.GetKey(glfw.KeyD) == glfw.Press {
+    crossProduct := cameraFront.Cross(cameraUp)
+    crossProduct = crossProduct.Normalize()
+    translation := crossProduct.Mul(cameraSpeed)
+    cameraPos = cameraPos.Add(translation)
+	}
+
 }
