@@ -1,11 +1,12 @@
 package main
 
 import (
+	. "micahke/go-graphics-engine/core"
+	"runtime"
+
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	. "micahke/go-graphics-engine/core"
-	"runtime"
 )
 
 func init() {
@@ -44,7 +45,7 @@ func main() {
 	// 	-0.5, 0.5, 0.0, 0.0, 1.0, // top left
 	// }
 
-  positions := GetCubePositions()
+	positions := GetCubePositions()
 
 	indeces := []uint32{
 		0, 1, 3, // first triangle
@@ -53,7 +54,7 @@ func main() {
 
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.Enable(gl.BLEND)
-  gl.Enable(gl.DEPTH_TEST)
+	gl.Enable(gl.DEPTH_TEST)
 
 	va := NewVertexArray()
 	vb := NewVertexBuffer(*positions)
@@ -86,22 +87,33 @@ func main() {
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    model := mgl32.Ident4()
-    modelRotation := mgl32.HomogRotate3D(mgl32.DegToRad(50.0) * float32(glfw.GetTime()), mgl32.Vec3{1.0, 0.0, 0.0})
-    model = model.Mul4(modelRotation)
+		for i := 0; i < 10; i++ {
 
-    view := mgl32.Ident4()
-    viewTranslation := mgl32.Translate3D(0.0, 0.0, -3.0)
-    view = view.Mul4(viewTranslation)
+			// model := mgl32.Ident4()
+			// modelRotation := mgl32.HomogRotate3D(mgl32.DegToRad(50.0)*float32(glfw.GetTime()), mgl32.Vec3{1.0, 0.0, 0.0})
+			// model = model.Mul4(modelRotation)
 
-    projection := mgl32.Perspective(mgl32.DegToRad(45.0), 960.0 / 540.0, 0.1, 100.0)
+			model := mgl32.Ident4()
+      activePosition := (*GetMultiCubePositions())[i]
+      modelTranslation := mgl32.Translate3D(activePosition[0], activePosition[1], activePosition[2])
+      angle := 25 * i
+      modelRotation := mgl32.HomogRotate3D(mgl32.DegToRad(float32(angle)) * float32(glfw.GetTime() / 10), mgl32.Vec3{1.0, 0.3, 0.5})
+      model = model.Mul4(modelTranslation)
+      model = model.Mul4(modelRotation)
 
-		shader.SetUniform4f("u_Color", 0.2, 0.3, 0.8, 1.0)
-    shader.SetUniformMat4f("model", model)
-    shader.SetUniformMat4f("view", view)
-    shader.SetUniformMat4f("projection", projection)
-    
-		renderer.Draw(va, ib, shader)
+			view := mgl32.Ident4()
+			viewTranslation := mgl32.Translate3D(0.0, 0.0, -3.0)
+			view = view.Mul4(viewTranslation)
+
+			projection := mgl32.Perspective(mgl32.DegToRad(45.0), 960.0/540.0, 0.1, 100.0)
+
+			shader.SetUniform4f("u_Color", 0.2, 0.3, 0.8, 1.0)
+			shader.SetUniformMat4f("model", model)
+			shader.SetUniformMat4f("view", view)
+			shader.SetUniformMat4f("projection", projection)
+
+			renderer.Draw(va, ib, shader)
+		}
 
 		// glfw: swap buffers and poll IO events
 		window.SwapBuffers()
