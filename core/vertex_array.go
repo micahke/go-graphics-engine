@@ -8,10 +8,10 @@ type VertexArray struct {
 	m_RendererID uint32
 }
 
-func NewVertexArray() VertexArray {
+func NewVertexArray() *VertexArray {
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
-	return VertexArray{m_RendererID: vao}
+	return &VertexArray{m_RendererID: vao}
 
 }
 

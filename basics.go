@@ -67,7 +67,7 @@ func RunBasics() {
 	layout := NewVertexBufferLayout()
 	layout.Pushf(3) // represents the postions
 	layout.Pushf(2) // represents the texture coords
-	va.AddBuffer(vb, layout)
+	va.AddBuffer(*vb, *layout)
 
 	ib := NewIndexBuffer(indeces)
 
@@ -113,7 +113,7 @@ func RunBasics() {
 			shader.SetUniformMat4f("model", model)
 			shader.SetUniform4f("u_Color", 0.2, 0.3, 0.8, 1.0)
 
-			renderer.Draw(va, ib, shader)
+			renderer.Draw(*va, ib, shader)
 		}
 
 		// glfw: swap buffers

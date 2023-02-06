@@ -13,9 +13,9 @@ type Camera struct {
 	pitch float32
 	fov   float32
 
-  firstMouse bool
-  lastX float32
-  lastY float32
+	firstMouse bool
+	lastX      float32
+	lastY      float32
 }
 
 func NewCamera(position glm.Vec3, front glm.Vec3, up glm.Vec3) *Camera {
@@ -30,9 +30,9 @@ func NewCamera(position glm.Vec3, front glm.Vec3, up glm.Vec3) *Camera {
 	camera.fov = 45.0
 	camera.speed = 2.5
 
-  camera.firstMouse = true
-  camera.lastX = 480
-  camera.lastY = 270
+	camera.firstMouse = true
+	camera.lastX = 480
+	camera.lastY = 270
 
 	return &camera
 
@@ -77,28 +77,35 @@ func (camera *Camera) TranslateRight(dt float32) {
 	camera.position = camera.position.Add(translation)
 }
 
+func (camera *Camera) TranslateUp(dt float32) {
+	translation := camera.up.Mul(camera.speed * dt)
+	camera.position = camera.position.Add(translation)
+}
+
+func (camera *Camera) TranslateDown(dt float32) {
+	translation := camera.up.Mul(camera.speed * dt)
+	camera.position = camera.position.Sub(translation)
+}
 
 func (camera *Camera) StepFOV(fov float32) {
-  camera.fov -= fov
-  if camera.fov < 1.0 {
-    camera.fov = 1.0
-  }
-  if camera.fov > 45.0 {
-    camera.fov = 45.0
-  }
+	camera.fov -= fov
+	if camera.fov < 1.0 {
+		camera.fov = 1.0
+	}
+	if camera.fov > 45.0 {
+		camera.fov = 45.0
+	}
 }
-
 
 func (camera *Camera) UpdateFOV(fov float32) {
-  camera.fov = fov
-  if camera.fov < 1.0 {
-    camera.fov = 1.0
-  }
-  if camera.fov > 45.0 {
-    camera.fov = 45.0
-  }
+	camera.fov = fov
+	if camera.fov < 1.0 {
+		camera.fov = 1.0
+	}
+	if camera.fov > 45.0 {
+		camera.fov = 45.0
+	}
 }
-
 
 func (camera *Camera) LookAtCursor(x float32, y float32) {
 	if camera.firstMouse {
@@ -133,4 +140,3 @@ func (camera *Camera) LookAtCursor(x float32, y float32) {
 	direction[2] = float32(math.Sin(float64(glm.DegToRad(camera.yaw))) * math.Cos(float64(glm.DegToRad(camera.pitch))))
 	camera.front = direction.Normalize()
 }
-

@@ -17,8 +17,8 @@ type Texture struct {
 	m_BPP             int
 }
 
-func NewTexture(path string) Texture {
-	texture := Texture{}
+func NewTexture(path string) *Texture {
+	texture := &Texture{}
 	texture.m_RendererID = 0
 	texture.m_FilePath = path
 	texture.m_BPP = 0

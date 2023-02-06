@@ -8,5 +8,6 @@ func init() {
 
 
 func main() {
-  RunBasics()
+  // RunBasics()
+  RunLighting()
 }
