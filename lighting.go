@@ -45,7 +45,7 @@ func RunLighting() {
 		panic("Error initializing OpenGL")
 	}
 
-	positions := GetCubeVertexPositions()
+	positions := GetLightingVertexCoords()
 
 	indeces := []uint32{
 		0, 1, 3, // first triangle
@@ -60,7 +60,10 @@ func RunLighting() {
   lightCubeVAO := NewVertexArray()
 	vbo := NewVertexBuffer(*positions)
 	vbl := NewVertexBufferLayout()
+  // STRIDE: 8
 	vbl.Pushf(3)
+  vbl.Pushf(3)
+  vbl.Pushf(2) // NOTE: This doesn't actually map to anything. Just need it for the stride
   
 	vao.AddBuffer(*vbo, *vbl)
   lightCubeVAO.AddBuffer(*vbo, *vbl)
@@ -92,6 +95,7 @@ func RunLighting() {
     objectShader.Bind()
     objectShader.SetUniform3f("objectColor", 1.0, 0.5, 0.32)
     objectShader.SetUniform3f("lightColor", 1.0, 1.0, 1.0)
+    objectShader.SetUniform3f("lightPos", l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
 
 		l_Camera.Update(&objectShader)
 
