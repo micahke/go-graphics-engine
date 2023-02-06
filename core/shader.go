@@ -109,6 +109,10 @@ func (shader *Shader) SetUniformMat4f(name string, matrix mgl32.Mat4) {
 	gl.UniformMatrix4fv(shader.GetUniformLocation(name), 1, false, &matrix[0])
 }
 
+func (shader *Shader) SetUniform3f(name string, v0 float32, v1 float32, v2 float32) {
+  gl.Uniform3f(shader.GetUniformLocation(name), v0, v1, v2)
+}
+
 func (shader *Shader) GetUniformLocation(name string) int32 {
 	// Check the cache
 	if value, ok := shader.m_UniformLocationCache[name]; ok {

@@ -17,6 +17,9 @@ var l_LastFrame float32 = 0.0
 
 var l_Camera *Camera
 
+var l_LightPosition glm.Vec3 = glm.Vec3{1.2, 1.0, 2.0}
+
+
 // Basically the main() function for the lighting section
 func RunLighting() {
 
@@ -42,7 +45,7 @@ func RunLighting() {
 		panic("Error initializing OpenGL")
 	}
 
-	positions := GetCubePositions()
+	positions := GetCubeVertexPositions()
 
 	indeces := []uint32{
 		0, 1, 3, // first triangle
@@ -54,22 +57,18 @@ func RunLighting() {
 	gl.Enable(gl.DEPTH_TEST)
 
 	vao := NewVertexArray()
+  lightCubeVAO := NewVertexArray()
 	vbo := NewVertexBuffer(*positions)
 	vbl := NewVertexBufferLayout()
-
 	vbl.Pushf(3)
-	vbl.Pushf(2)
+  
 	vao.AddBuffer(*vbo, *vbl)
+  lightCubeVAO.AddBuffer(*vbo, *vbl)
 
 	ibo := NewIndexBuffer(indeces)
 
-	shader := NewShader("vertexShader.glsl", "fragmentShader.glsl")
-	shader.Bind()
-	shader.SetUniform1i("u_Texture", 0)
-
-	texture := NewTexture("wall.png")
-	texture.Bind(0)
-	shader.SetUniform1i("u_Texture", 0)
+	objectShader := NewShader("lsVertex.glsl", "lsObject.glsl")
+  lightShader := NewShader("lsVertex.glsl", "lsLight.glsl")
 
 	renderer := NewRenderer()
 
@@ -89,12 +88,30 @@ func RunLighting() {
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		l_Camera.Update(&shader)
 
+    objectShader.Bind()
+    objectShader.SetUniform3f("objectColor", 1.0, 0.5, 0.32)
+    objectShader.SetUniform3f("lightColor", 1.0, 1.0, 1.0)
+
+		l_Camera.Update(&objectShader)
+
+		// draw the object
 		model := glm.Ident4()
-		shader.SetUniformMat4f("model", model)
+		objectShader.SetUniformMat4f("model", model)
+		renderer.Draw(*vao, ibo, objectShader)
 
-		renderer.Draw(*vao, ibo, shader)
+
+    lightShader.Bind()
+    l_Camera.Update(&lightShader)
+
+    // Draw light cube
+    lightCube := glm.Ident4()
+    lightTranslation := glm.Translate3D(l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
+    lightScale := glm.Scale3D(0.2, 0.2, 0.2)
+    lightCube = lightCube.Mul4(lightTranslation).Mul4(lightScale)
+		lightShader.SetUniformMat4f("model", lightCube)
+		renderer.Draw(*lightCubeVAO, ibo, lightShader)
+
 
 		window.SwapBuffers()
 		glfw.PollEvents()
@@ -107,9 +124,9 @@ func RunLighting() {
 
 func l_process_input(window *glfw.Window) {
 	// control the camera
-  if l_Camera == nil {
-    return 
-  }
+	if l_Camera == nil {
+		return
+	}
 	if window.GetKey(glfw.KeyW) == glfw.Press {
 		l_Camera.TranslateForward(l_DeltaTime)
 	}
