@@ -19,7 +19,6 @@ var l_Camera *Camera
 
 var l_LightPosition glm.Vec3 = glm.Vec3{1.2, 1.0, 2.0}
 
-
 // Basically the main() function for the lighting section
 func RunLighting() {
 
@@ -47,31 +46,23 @@ func RunLighting() {
 
 	positions := GetLightingVertexCoords()
 
-	indeces := []uint32{
-		0, 1, 3, // first triangle
-		1, 2, 3, // second triangle
-	}
-
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.Enable(gl.BLEND)
 	gl.Enable(gl.DEPTH_TEST)
 
 	vao := NewVertexArray()
-  lightCubeVAO := NewVertexArray()
+	lightCubeVAO := NewVertexArray()
 	vbo := NewVertexBuffer(*positions)
 	vbl := NewVertexBufferLayout()
-  // STRIDE: 8
 	vbl.Pushf(3)
-  vbl.Pushf(3)
-  vbl.Pushf(2) // NOTE: This doesn't actually map to anything. Just need it for the stride
-  
-	vao.AddBuffer(*vbo, *vbl)
-  lightCubeVAO.AddBuffer(*vbo, *vbl)
+	vbl.Pushf(3)
+  // NOTE: Add a way to customize the stride so that we can ignore values in the buffer
 
-	ibo := NewIndexBuffer(indeces)
+	vao.AddBuffer(*vbo, *vbl)
+	lightCubeVAO.AddBuffer(*vbo, *vbl)
 
 	objectShader := NewShader("lsVertex.glsl", "lsObject.glsl")
-  lightShader := NewShader("lsVertex.glsl", "lsLight.glsl")
+	lightShader := NewShader("lsVertex.glsl", "lsLight.glsl")
 
 	renderer := NewRenderer()
 
@@ -91,31 +82,28 @@ func RunLighting() {
 		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-
-    objectShader.Bind()
-    objectShader.SetUniform3f("objectColor", 1.0, 0.5, 0.32)
-    objectShader.SetUniform3f("lightColor", 1.0, 1.0, 1.0)
-    objectShader.SetUniform3f("lightPos", l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
+		objectShader.Bind()
+		objectShader.SetUniform3f("objectColor", 1.0, 0.5, 0.32)
+		objectShader.SetUniform3f("lightColor", 1.0, 1.0, 1.0)
+		objectShader.SetUniform3f("lightPos", l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
 
 		l_Camera.Update(&objectShader)
 
 		// draw the object
 		model := glm.Ident4()
 		objectShader.SetUniformMat4f("model", model)
-		renderer.Draw(*vao, ibo, objectShader)
+		renderer.Draw(*vao, objectShader)
 
+		lightShader.Bind()
+		l_Camera.Update(&lightShader)
 
-    lightShader.Bind()
-    l_Camera.Update(&lightShader)
-
-    // Draw light cube
-    lightCube := glm.Ident4()
-    lightTranslation := glm.Translate3D(l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
-    lightScale := glm.Scale3D(0.2, 0.2, 0.2)
-    lightCube = lightCube.Mul4(lightTranslation).Mul4(lightScale)
+		// Draw light cube
+		lightCube := glm.Ident4()
+		lightTranslation := glm.Translate3D(l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
+		lightScale := glm.Scale3D(0.2, 0.2, 0.2)
+		lightCube = lightCube.Mul4(lightTranslation).Mul4(lightScale)
 		lightShader.SetUniformMat4f("model", lightCube)
-		renderer.Draw(*lightCubeVAO, ibo, lightShader)
-
+		renderer.Draw(*lightCubeVAO, lightShader)
 
 		window.SwapBuffers()
 		glfw.PollEvents()

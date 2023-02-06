@@ -112,8 +112,8 @@ func RunBasics() {
 			model = model.Mul4(modelRotation)
 			shader.SetUniformMat4f("model", model)
 			shader.SetUniform4f("u_Color", 0.2, 0.3, 0.8, 1.0)
-
-			renderer.Draw(*va, ib, shader)
+      ib.Bind()
+			renderer.Draw(*va, shader)
 		}
 
 		// glfw: swap buffers

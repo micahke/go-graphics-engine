@@ -9,10 +9,9 @@ func NewRenderer() *Renderer {
 	return &Renderer{}
 }
 
-func (renderer *Renderer) Draw(va VertexArray, ib IndexBuffer, shader Shader) {
+func (renderer *Renderer) Draw(va VertexArray, shader Shader) {
 	shader.Bind()
 	va.Bind()
-	ib.Bind()
   gl.DrawArrays(gl.TRIANGLES, 0, 36)
 	// gl.DrawElements(gl.TRIANGLES, int32(ib.GetCount()), gl.UNSIGNED_INT, nil)
 }
