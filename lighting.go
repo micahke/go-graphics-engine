@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	. "micahke/go-graphics-engine/core"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -56,7 +57,7 @@ func RunLighting() {
 	vbl := NewVertexBufferLayout()
 	vbl.Pushf(3)
 	vbl.Pushf(3)
-  // NOTE: Add a way to customize the stride so that we can ignore values in the buffer
+	// NOTE: Add a way to customize the stride so that we can ignore values in the buffer
 
 	vao.AddBuffer(*vbo, *vbl)
 	lightCubeVAO.AddBuffer(*vbo, *vbl)
@@ -72,6 +73,8 @@ func RunLighting() {
 
 	l_Camera = NewCamera(l_CameraPos, l_CameraFront, l_CameraUp)
 
+	var lightColor glm.Vec3
+
 	for !window.ShouldClose() {
 		var currentFrame float32 = float32(glfw.GetTime())
 		l_DeltaTime = currentFrame - l_LastFrame
@@ -79,19 +82,35 @@ func RunLighting() {
 
 		l_process_input(window)
 
-		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
+		gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
 
 		objectShader.Bind()
 		objectShader.SetUniform3f("objectColor", 1.0, 0.5, 0.32)
 		objectShader.SetUniform3f("lightColor", 1.0, 1.0, 1.0)
 		objectShader.SetUniform3f("lightPos", l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
-    objectShader.SetUniform3f("viewPos", l_Camera.Position[0], l_Camera.Position[1], l_Camera.Position[2])
-    objectShader.SetUniform3f("material.ambient", 1.0, 0.5, 0.31)
-    objectShader.SetUniform3f("material.diffuse", 1.0, 0.5, 0.31)
-    objectShader.SetUniform3f("material.specular", 0.5, 0.5, 0.5)
-    objectShader.SetUniform1f("material.shininess", 32.0)
+		objectShader.SetUniform3f("viewPos", l_Camera.Position[0], l_Camera.Position[1], l_Camera.Position[2])
+
+		// material shaders
+		objectShader.SetUniform3f("material.ambient", 1.0, 0.5, 0.31)
+		objectShader.SetUniform3f("material.diffuse", 1.0, 0.5, 0.31)
+		objectShader.SetUniform3f("material.specular", 0.5, 0.5, 0.5)
+		objectShader.SetUniform1f("material.shininess", 32.0)
+
+		// light shaders
+		objectShader.SetUniform3f("light.ambient", 0.2, 0.2, 0.2)
+		objectShader.SetUniform3f("light.diffuse", 0.5, 0.5, 0.5)
+		objectShader.SetUniform3f("light.specular", 1.0, 1.0, 1.0)
+
+		lightColor[0] = float32(math.Sin(glfw.GetTime() * 2.0))
+		lightColor[1] = float32(math.Sin(glfw.GetTime() * 0.7))
+		lightColor[2] = float32(math.Sin(glfw.GetTime() * 1.3))
+
+    diffuseColor := lightColor.Mul(0.5)
+    ambientColor := diffuseColor.Mul(0.2)
+
+    objectShader.SetUniform3f("light.ambient", ambientColor[0], ambientColor[1], ambientColor[2])
+    objectShader.SetUniform3f("light.diffuse", diffuseColor[0], diffuseColor[1], diffuseColor[2])
 
 		l_Camera.Update(&objectShader)
 
