@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math"
 	. "micahke/go-graphics-engine/core"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -19,6 +18,8 @@ var l_LastFrame float32 = 0.0
 var l_Camera *Camera
 
 var l_LightPosition glm.Vec3 = glm.Vec3{1.2, 1.0, 2.0}
+
+var l_LightColor glm.Vec3 = glm.Vec3{1.0, 1.0, 1.0}
 
 // Basically the main() function for the lighting section
 func RunLighting() {
@@ -45,7 +46,7 @@ func RunLighting() {
 		panic("Error initializing OpenGL")
 	}
 
-	positions := GetLightingVertexCoords()
+	positions := GetLightingMapCoords()
 
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.Enable(gl.BLEND)
@@ -57,13 +58,11 @@ func RunLighting() {
 	vbl := NewVertexBufferLayout()
 	vbl.Pushf(3)
 	vbl.Pushf(3)
+	vbl.Pushf(2)
 	// NOTE: Add a way to customize the stride so that we can ignore values in the buffer
 
 	vao.AddBuffer(*vbo, *vbl)
 	lightCubeVAO.AddBuffer(*vbo, *vbl)
-
-	objectShader := NewShader("lsVertex.glsl", "lsObject.glsl")
-	lightShader := NewShader("lsVertex.glsl", "lsLight.glsl")
 
 	renderer := NewRenderer()
 
@@ -73,7 +72,13 @@ func RunLighting() {
 
 	l_Camera = NewCamera(l_CameraPos, l_CameraFront, l_CameraUp)
 
-	var lightColor glm.Vec3
+	objectShader := NewShader("lsVertex.glsl", "lsObject.glsl")
+	lightShader := NewShader("lsVertex.glsl", "lsLight.glsl")
+
+	diffuseMap := NewTexture("wall.png")
+
+	objectShader.Bind()
+	objectShader.SetUniform1f("material.diffuse", 0)
 
 	for !window.ShouldClose() {
 		var currentFrame float32 = float32(glfw.GetTime())
@@ -82,7 +87,7 @@ func RunLighting() {
 
 		l_process_input(window)
 
-		gl.ClearColor(0.0, 0.0, 0.0, 1.0)
+		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		objectShader.Bind()
@@ -102,26 +107,27 @@ func RunLighting() {
 		objectShader.SetUniform3f("light.diffuse", 0.5, 0.5, 0.5)
 		objectShader.SetUniform3f("light.specular", 1.0, 1.0, 1.0)
 
+		// Light colors
+		// l_LightColor[0] = float32(math.Sin(glfw.GetTime() * 2.0))
+		// l_LightColor[1] = float32(math.Sin(glfw.GetTime() * 0.7))
+		// l_LightColor[2] = float32(math.Sin(glfw.GetTime() * 1.3))
 
-    // Light colors
-		lightColor[0] = float32(math.Sin(glfw.GetTime() * 2.0))
-		lightColor[1] = float32(math.Sin(glfw.GetTime() * 0.7))
-		lightColor[2] = float32(math.Sin(glfw.GetTime() * 1.3))
+		// DIffuse and ambient colors
+		diffuseColor := l_LightColor.Mul(0.5)
+		ambientColor := diffuseColor.Mul(0.2)
 
-
-    // DIffuse and ambient colors
-    diffuseColor := lightColor.Mul(0.5)
-    ambientColor := diffuseColor.Mul(0.2)
-
-    // Set light values in the component
-    objectShader.SetUniform3f("light.ambient", ambientColor[0], ambientColor[1], ambientColor[2])
-    objectShader.SetUniform3f("light.diffuse", diffuseColor[0], diffuseColor[1], diffuseColor[2])
+		// Set light values in the component
+		objectShader.SetUniform3f("light.ambient", ambientColor[0], ambientColor[1], ambientColor[2])
+		objectShader.SetUniform3f("light.diffuse", diffuseColor[0], diffuseColor[1], diffuseColor[2])
 
 		l_Camera.Update(&objectShader)
 
 		// draw the object
 		model := glm.Ident4()
 		objectShader.SetUniformMat4f("model", model)
+
+		diffuseMap.Bind(0)
+
 		renderer.Draw(*vao, objectShader)
 
 		lightShader.Bind()
@@ -133,7 +139,7 @@ func RunLighting() {
 		lightScale := glm.Scale3D(0.2, 0.2, 0.2)
 		lightCube = lightCube.Mul4(lightTranslation).Mul4(lightScale)
 		lightShader.SetUniformMat4f("model", lightCube)
-    lightShader.SetUniform3f("cubeColor", lightColor[0], lightColor[1], lightColor[2])
+		lightShader.SetUniform3f("cubeColor", l_LightColor[0], l_LightColor[1], l_LightColor[2])
 		renderer.Draw(*lightCubeVAO, lightShader)
 
 		window.SwapBuffers()
