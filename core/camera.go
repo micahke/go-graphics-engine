@@ -4,7 +4,7 @@ import glm "github.com/go-gl/mathgl/mgl32"
 import "math"
 
 type Camera struct {
-	position glm.Vec3
+	Position glm.Vec3
 	front    glm.Vec3
 	up       glm.Vec3
 
@@ -21,7 +21,7 @@ type Camera struct {
 func NewCamera(position glm.Vec3, front glm.Vec3, up glm.Vec3) *Camera {
 
 	camera := Camera{}
-	camera.position = position
+	camera.Position = position
 	camera.front = front
 	camera.up = up
 
@@ -48,43 +48,43 @@ func (camera *Camera) Update(shader *Shader) {
 
 	view := glm.Ident4()
 	// var radius float32 = 5.0 camX := float32(math.Sin(glfw.GetTime())) * radius camZ := float32(math.Cos(glfw.GetTime())) * radius
-	cameraLookAt := glm.LookAtV(camera.position, camera.position.Add(camera.front), camera.up)
+	cameraLookAt := glm.LookAtV(camera.Position, camera.Position.Add(camera.front), camera.up)
 	view = view.Mul4(cameraLookAt)
 	shader.SetUniformMat4f("view", view)
 }
 
 func (camera *Camera) TranslateForward(dt float32) {
 	translation := camera.front.Mul(camera.speed * dt)
-	camera.position = camera.position.Add(translation)
+	camera.Position = camera.Position.Add(translation)
 }
 
 func (camera *Camera) TranslateBackward(dt float32) {
 	translation := camera.front.Mul(camera.speed * dt)
-	camera.position = camera.position.Sub(translation)
+	camera.Position = camera.Position.Sub(translation)
 }
 
 func (camera *Camera) TranslateLeft(dt float32) {
 	crossProduct := camera.front.Cross(camera.up)
 	crossProduct = crossProduct.Normalize()
 	translation := crossProduct.Mul(camera.speed * dt)
-	camera.position = camera.position.Sub(translation)
+	camera.Position = camera.Position.Sub(translation)
 }
 
 func (camera *Camera) TranslateRight(dt float32) {
 	crossProduct := camera.front.Cross(camera.up)
 	crossProduct = crossProduct.Normalize()
 	translation := crossProduct.Mul(camera.speed * dt)
-	camera.position = camera.position.Add(translation)
+	camera.Position = camera.Position.Add(translation)
 }
 
 func (camera *Camera) TranslateUp(dt float32) {
 	translation := camera.up.Mul(camera.speed * dt)
-	camera.position = camera.position.Add(translation)
+	camera.Position = camera.Position.Add(translation)
 }
 
 func (camera *Camera) TranslateDown(dt float32) {
 	translation := camera.up.Mul(camera.speed * dt)
-	camera.position = camera.position.Sub(translation)
+	camera.Position = camera.Position.Sub(translation)
 }
 
 func (camera *Camera) StepFOV(fov float32) {
@@ -140,3 +140,7 @@ func (camera *Camera) LookAtCursor(x float32, y float32) {
 	direction[2] = float32(math.Sin(float64(glm.DegToRad(camera.yaw))) * math.Cos(float64(glm.DegToRad(camera.pitch))))
 	camera.front = direction.Normalize()
 }
+
+
+
+

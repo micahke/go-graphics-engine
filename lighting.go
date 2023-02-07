@@ -82,10 +82,12 @@ func RunLighting() {
 		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
+
 		objectShader.Bind()
 		objectShader.SetUniform3f("objectColor", 1.0, 0.5, 0.32)
 		objectShader.SetUniform3f("lightColor", 1.0, 1.0, 1.0)
 		objectShader.SetUniform3f("lightPos", l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
+    objectShader.SetUniform3f("viewPos", l_Camera.Position[0], l_Camera.Position[1], l_Camera.Position[2])
 
 		l_Camera.Update(&objectShader)
 
