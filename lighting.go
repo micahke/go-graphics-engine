@@ -102,13 +102,18 @@ func RunLighting() {
 		objectShader.SetUniform3f("light.diffuse", 0.5, 0.5, 0.5)
 		objectShader.SetUniform3f("light.specular", 1.0, 1.0, 1.0)
 
+
+    // Light colors
 		lightColor[0] = float32(math.Sin(glfw.GetTime() * 2.0))
 		lightColor[1] = float32(math.Sin(glfw.GetTime() * 0.7))
 		lightColor[2] = float32(math.Sin(glfw.GetTime() * 1.3))
 
+
+    // DIffuse and ambient colors
     diffuseColor := lightColor.Mul(0.5)
     ambientColor := diffuseColor.Mul(0.2)
 
+    // Set light values in the component
     objectShader.SetUniform3f("light.ambient", ambientColor[0], ambientColor[1], ambientColor[2])
     objectShader.SetUniform3f("light.diffuse", diffuseColor[0], diffuseColor[1], diffuseColor[2])
 
@@ -128,6 +133,7 @@ func RunLighting() {
 		lightScale := glm.Scale3D(0.2, 0.2, 0.2)
 		lightCube = lightCube.Mul4(lightTranslation).Mul4(lightScale)
 		lightShader.SetUniformMat4f("model", lightCube)
+    lightShader.SetUniform3f("cubeColor", lightColor[0], lightColor[1], lightColor[2])
 		renderer.Draw(*lightCubeVAO, lightShader)
 
 		window.SwapBuffers()
