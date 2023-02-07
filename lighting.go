@@ -88,6 +88,10 @@ func RunLighting() {
 		objectShader.SetUniform3f("lightColor", 1.0, 1.0, 1.0)
 		objectShader.SetUniform3f("lightPos", l_LightPosition[0], l_LightPosition[1], l_LightPosition[2])
     objectShader.SetUniform3f("viewPos", l_Camera.Position[0], l_Camera.Position[1], l_Camera.Position[2])
+    objectShader.SetUniform3f("material.ambient", 1.0, 0.5, 0.31)
+    objectShader.SetUniform3f("material.diffuse", 1.0, 0.5, 0.31)
+    objectShader.SetUniform3f("material.specular", 0.5, 0.5, 0.5)
+    objectShader.SetUniform1f("material.shininess", 32.0)
 
 		l_Camera.Update(&objectShader)
 
