@@ -22,9 +22,8 @@ struct Material {
 uniform Material material;
 
 void main()
-{
-  // AMBIENT:
-  vec3 ambient = lightColor * material.ambient;
+{ // AMBIENT:
+  vec3 ambient = lightColor * material.ambient * vec3(0.1); // NOTE: revert to regular multiplication
 
   // DIFFUSE:
   vec3 norm = normalize(Normal);
